@@ -38,6 +38,7 @@
         let hearts = 3;
         let boostActive = false;
         let boostTimer = 0;
+        let distance = 0;  // 이동 거리 추적
         const gravity = 0.2;
         const friction = 0.98;
         const keys = {};
@@ -80,8 +81,9 @@
             ctx.fillStyle = '#fff';
             ctx.font = '24px Arial';
             ctx.fillText(`Hearts: ${'❤️'.repeat(hearts)}`, 20, 40);
+            ctx.fillText(`Distance: ${Math.floor(distance)}m`, 20, 80);  // 거리 표시
             if (boostActive) {
-                ctx.fillText(`Boost: ${Math.ceil(boostTimer / 60)}s`, 20, 80);
+                ctx.fillText(`Boost: ${Math.ceil(boostTimer / 60)}s`, 20, 120);
             }
         }
 
@@ -134,13 +136,14 @@
                     player.y + player.height > wave.y) {
                         hearts--;
                         if (hearts <= 0) {
-                            alert('Game Over!');
+                            alert(`Game Over! You traveled ${Math.floor(distance)} meters.`);
                             resetGame();
                         }
                         wave.x = canvas.width + Math.random() * 300;
                         wave.y = Math.random() * canvas.height;
                 }
             });
+            distance += 0.1;  // 거리 증가
         }
 
         function resetGame() {
@@ -149,6 +152,7 @@
             boostActive = false;
             boostTimer = 0;
             player.rotation = 0;
+            distance = 0;  // 거리 초기화
             waves.forEach((wave, i) => {
                 wave.x = canvas.width + i * 300;
                 wave.y = Math.random() * canvas.height;
