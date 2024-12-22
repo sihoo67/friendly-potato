@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge Surf Clone</title>
+    <style>
+        body, html {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="surfGame"></canvas>
+
+    <script>
+        const canvas = document.getElementById('surfGame');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const player = {
+            x: 100,
+            y: canvas.height / 2,
+            width: 40,
+            height: 40,
+            speed: 5,
+            dy: 0,
+            rotation: 0,
+            turnCounter: 0
+        };
+
+        let hearts = 3;
+        let boostActive = false;
+        let boostTimer = 0;
+        const gravity = 0.2;
+        const friction = 0.98;
+        const keys = {};
+
+        document.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        const waves = [];
+        for (let i = 0; i < 10; i++) {
+            waves.push({
+                x: canvas.width + i * 300,
+                y: Math.random() * canvas.height,
+                width: 50,
+                height: 50
+            });
+        }
+
+        function drawPlayer() {
+            ctx.save();
+            ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
+            ctx.rotate(player.rotation * Math.PI / 180);
+            ctx.fillStyle = boostActive ? '#FFD700' : '#00f';
+            ctx.fillRect(-player.width / 2, -player.height / 2, player.width, player.height);
+            ctx.restore();
+        }
+
+        function drawWaves() {
+            ctx.fillStyle = '#a00';
+            waves.forEach(wave => {
+                ctx.fillRect(wave.x, wave.y, wave.width, wave.height);
+            });
+        }
+
+        function drawHUD() {
+            ctx.fillStyle = '#fff';
+            ctx.font = '24px Arial';
+            ctx.fillText(`Hearts: ${'❤️'.repeat(hearts)}`, 20, 40);
+            if (boostActive) {
+                ctx.fillText(`Boost: ${Math.ceil(boostTimer / 60)}s`, 20, 80);
+            }
+        }
+
+        function movePlayer() {
+            if (keys['ArrowUp']) player.dy = 0; // 멈춤
+            if (keys['ArrowDown']) player.dy += player.speed * (keys['ArrowDown'] ? 1.5 : 1); // 아래로 갈수록 속도 증가
+            if (keys['ArrowLeft']) {
+                player.turnCounter++;
+                if (player.turnCounter <= 1) {
+                    player.rotation -= 10;
+                } else if (player.turnCounter === 2) {
+                    player.rotation -= 10;
+                    player.turnCounter = 0;
+                }
+            }
+            if (keys['ArrowRight']) {
+                player.turnCounter++;
+                if (player.turnCounter <= 1) {
+                    player.rotation += 10;
+                } else if (player.turnCounter === 2) {
+                    player.rotation += 10;
+                    player.turnCounter = 0;
+                }
+            }
+
+            player.y += player.dy;
+
+            if (player.y + player.height > canvas.height) {
+                player.y = canvas.height - player.height;
+                player.dy = 0;
+            }
+
+            if (player.y < 0) {
+                player.y = 0;
+                player.dy = 0;
+            }
+        }
+
+        function moveWaves() {
+            waves.forEach(wave => {
+                wave.x -= 5;
+                if (wave.x + wave.width < 0) {
+                    wave.x = canvas.width + Math.random() * 300;
+                    wave.y = Math.random() * canvas.height;
+                }
+
+                if (player.x < wave.x + wave.width &&
+                    player.x + player.width > wave.x &&
+                    player.y < wave.y + wave.height &&
+                    player.y + player.height > wave.y) {
+                        hearts--;
+                        if (hearts <= 0) {
+                            alert('Game Over!');
+                            resetGame();
+                        }
+                        wave.x = canvas.width + Math.random() * 300;
+                        wave.y = Math.random() * canvas.height;
+                }
+            });
+        }
+
+        function resetGame() {
+            player.y = canvas.height / 2;
+            hearts = 3;
+            boostActive = false;
+            boostTimer = 0;
+            player.rotation = 0;
+            waves.forEach((wave, i) => {
+                wave.x = canvas.width + i * 300;
+                wave.y = Math.random() * canvas.height;
+            });
+        }
+
+        function activateBoost() {
+            if (!boostActive) {
+                boostActive = true;
+                boostTimer = 600;
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            drawWaves();
+            drawHUD();
+            movePlayer();
+            moveWaves();
+
+            if (boostActive) {
+                boostTimer--;
+                if (boostTimer <= 0) boostActive = false;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            resetGame();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') activateBoost();
+        });
+    </script>
+</body>
+</html>
