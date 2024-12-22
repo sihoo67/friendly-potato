@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edge Surf Clone</title>
+    <title>Pingusurf</title>
     <style>
         body, html {
             margin: 0;
@@ -86,8 +86,8 @@
         }
 
         function movePlayer() {
-            if (keys['ArrowUp']) player.dy = 0; // 멈춤
-            if (keys['ArrowDown']) player.dy += player.speed * (keys['ArrowDown'] ? 1.5 : 1); // 아래로 갈수록 속도 증가
+            if (keys['ArrowUp']) player.dy -= player.speed; // 위로 이동
+            if (keys['ArrowDown']) player.dy += player.speed * (keys['ArrowDown'] ? 1.5 : 1); // 아래로 속도 증가
             if (keys['ArrowLeft']) {
                 player.turnCounter++;
                 if (player.turnCounter <= 1) {
